@@ -1,1 +1,27 @@
-from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom STOUT import translate_forward\nimport uvicorn\n\napp = FastAPI(title="STOUT IUPAC API")\n\nclass MoleculeRequest(BaseModel):\n    smiles: str\n\n@app.get("/")\ndef home():\n    return {"status": "Active", "message": "STOUT is running on Cloud."}\n\n@app.post("/get_iupac")\ndef generate_iupac(request: MoleculeRequest):\n    smiles = request.smiles.strip()\n    if not smiles:\n        raise HTTPException(status_code=400, detail="SMILES is empty")\n    \n    try:\n        iupac_name = translate_forward(smiles)\n        if not iupac_name or "Could not" in iupac_name:\n            raise HTTPException(status_code=400, detail="Invalid structure")\n        return {"smiles": smiles, "iupac": iupac_name}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))\n
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from STOUT import translate_forward
+import uvicorn
+
+app = FastAPI(title="STOUT IUPAC API")
+
+class MoleculeRequest(BaseModel):
+    smiles: str
+
+@app.get("/")
+def home():
+    return {"status": "Active", "message": "STOUT is running on Cloud."}
+
+@app.post("/get_iupac")
+def generate_iupac(request: MoleculeRequest):
+    smiles = request.smiles.strip()
+    if not smiles:
+        raise HTTPException(status_code=400, detail="SMILES is empty")
+    
+    try:
+        iupac_name = translate_forward(smiles)
+        if not iupac_name or "Could not" in iupac_name:
+            raise HTTPException(status_code=400, detail="Invalid structure")
+        return {"smiles": smiles, "iupac": iupac_name}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
